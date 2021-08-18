@@ -6,8 +6,8 @@ import struct
 import sys
 import traceback
 from pyftdi import ftdi
-import ecc
-import flashdevice_defs
+from . import ecc
+from . import flashdevice_defs
 
 class IO:
     def __init__(self, do_slow = False, debug = 0, simulation_mode = False):
@@ -35,12 +35,12 @@ class IO:
 
         if self.ftdi is not None:
             try:
-                self.ftdi.open(0x0403, 0x6010, interface = 1)
+                self.ftdi.open(0x0403, 0x6001, interface = 1)
             except:
                 traceback.print_exc(file = sys.stdout)
 
             if self.ftdi.is_connected:
-                self.ftdi.set_bitmode(0, self.ftdi.BITMODE_MCU)
+                self.ftdi.set_bitmode(0, ftdi.Ftdi.BitMode.MCU)
 
                 if self.Slow:
                     # Clock FTDI chip at 12MHz instead of 60MHz
@@ -59,19 +59,18 @@ class IO:
         if self.ftdi is None or not self.ftdi.is_connected:
             return
 
-        while 1:
+        MAX_READY_WAITING = 10
+        for seconds in range (1, MAX_READY_WAITING):
             self.ftdi.write_data(Array('B', [ftdi.Ftdi.GET_BITS_HIGH]))
             data = self.ftdi.read_data_bytes(1)
             if not data or len(data) <= 0:
-                raise Exception('FTDI device Not ready. Try restarting it.')
+                print('Waiting for the FTDI device to become ready... {}'.format(MAX_READY_WAITING - seconds))
+                time.sleep(1)
+            else:
+                if  data[0] & 2 == 0x2:
+                    return
 
-            if  data[0] & 2 == 0x2:
-                return
-
-            if self.Debug > 0:
-                print('Not Ready', data)
-
-        return
+        raise Exception('FTDI device Not ready. Try restarting it.')
 
     def __read(self, cl, al, count):
         cmds = []

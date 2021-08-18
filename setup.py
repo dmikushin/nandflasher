@@ -14,12 +14,18 @@ setuptools.setup(
     url="https://github.com/ohjeongwook/dumpflash",
     packages=setuptools.find_packages(),
     install_requires=[
-          'pyftdi',
+          'pyusb', 'pyftdi',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    entry_points={
+        "console_scripts": [
+            "dumpflash = dumpflash.dumpflash:main",
+            "dumpjffs2 = dumpjffs2.dumpjffs2:main",
+        ]
+    },
     python_requires='>=2.7',
 )

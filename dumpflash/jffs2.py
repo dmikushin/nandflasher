@@ -6,10 +6,10 @@ import os
 import struct
 import sys
 import time
-import flashfile
-import flashdevice
-import uboot
-import ecc
+from . import flashfile
+from . import flashdevice
+from . import uboot
+from . import ecc
 
 class Util:
     def __init__(self, flash_image_io):
